@@ -59,4 +59,19 @@ export default [
     price: 30690,
     image: '/img/headphones.jpg',
   },
+  {
+    title: 'Наушники Apple AirPods Max',
+    price: 41990,
+    image: '/img/airpods-max.webp',
+  },
+  {
+    title: 'Наушники Bose QuietComfort 45',
+    price: 28990,
+    image: '/img/bose-qc45.jpg',
+  },
+  {
+    title: 'Наушники Sennheiser Momentum 3',
+    price: 27490,
+    image: '/img/sennheiser-momentum.webp',
+  },
 ];
