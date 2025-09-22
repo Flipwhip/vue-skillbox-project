@@ -21,21 +21,24 @@
     <ul class="colors colors--black">
       <li class="colors__item">
         <label class="colors__label">
-          <input class="colors__radio sr-only" type="radio" value="#73B6EA" v-model="color">
+          <input class="colors__radio sr-only" type="radio" value="#73B6EA" v-model="currentColor"
+            :name="`color-${product.id}`">
           <span class="colors__value" style="background-color: #73B6EA;">
           </span>
         </label>
       </li>
       <li class="colors__item">
         <label class="colors__label">
-          <input class="colors__radio sr-only" type="radio" value="#8BE000" v-model="color">
+          <input class="colors__radio sr-only" type="radio" value="#8BE000" v-model="currentColor"
+            :name="`color-${product.id}`">
           <span class="colors__value" style="background-color: #8BE000;">
           </span>
         </label>
       </li>
       <li class="colors__item">
         <label class="colors__label">
-          <input class="colors__radio sr-only" type="radio" value="#222" v-model="color">
+          <input class="colors__radio sr-only" type="radio" value="#222" v-model="currentColor"
+            :name="`color-${product.id}`">
           <span class="colors__value" style="background-color: #222;">
           </span>
         </label>
@@ -49,11 +52,17 @@
 
 export default {
   name: 'ProductItem',
-  props: ['product'],
-  data() {
-    return {
-      color: '#73B6EA',
-    };
+  props: ['product', 'color'],
+
+  computed: {
+    currentColor: {
+      get() {
+        return this.color;
+      },
+      set(value) {
+        this.$emit('update:color', value);
+      },
+    },
   },
 };
 

@@ -3,7 +3,7 @@
 <template>
   <ul class="catalog__list">
     <!-- // eslint-disable-next-line vue/require-v-for-key, vue/require-v-for-key -->
-    <ProductItem v-for='product in products' :key="product.id" :product="product" />
+    <ProductItem v-for="product in products" :key="product.id" :product="product" :color.sync="product.color" />
   </ul>
 </template>
 
