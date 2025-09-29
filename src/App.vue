@@ -39,6 +39,5 @@ export default {
   created() {
     eventBus.$on('gotoPage', (pageName, pageParams) => this.gotoPage(pageName, pageParams));
   },
-
 };
 </script>
