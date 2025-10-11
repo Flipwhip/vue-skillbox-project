@@ -6,7 +6,7 @@
       </svg>
     </button>
 
-    <input type="text" :value="productCount" @change="changeProductCount">
+    <input type="text" :value="productCount" disabled>
 
     <button type="button" aria-label="Добавить один товар" @click.prevent="incrCount">
       <svg width="12" height="12" fill="currentColor">
@@ -30,12 +30,8 @@ export default {
     }
   },
   methods: {
-    addCount(productAmount) {
-      this.$emit('addCount', productAmount);
-    },
-    changeProductCount(event) {
-      const value = parseInt(event.target.value) || 1;
-      this.addCount(value);
+    addCount(value) {
+      this.$emit('addCount', value);
     },
     decrCount() {
       if (this.productAmount > 1) {

@@ -20,7 +20,7 @@
         Корзина
       </h1>
       <span class="content__info">
-        3 товара
+        {{ products.length | productWord }}
       </span>
     </div>
 
@@ -88,11 +88,12 @@
 
 <script>
 import numberFormat from '@/helpers/numberFormat';
+import productWord from '@/helpers/productWord';
 import { mapGetters } from 'vuex';
 
 export default {
   name: 'CartPage',
-  filters: { numberFormat },
+  filters: { numberFormat, productWord },
   computed: {
     ...mapGetters({ products: 'cartDetailProducts', totalPrice: 'cartTotalPrice' })
 
