@@ -21,6 +21,15 @@ export default new Vuex.Store({
         });
       }
     },
+    updateCartProductAmount(state, { productId, amount }) {
+      const item = state.cardProducts.find((item) => item.productId === productId);
+      if (item) {
+        item.amount = amount;
+      }
+    },
+    deleteCartProduct(state, productId) {
+      state.cardProducts = state.cardProducts.filter((item) => item.productId !== productId);
+    },
   },
   //   можно сократить при деструктуризации
   // addProductToCart(state, {productId, amount}){
