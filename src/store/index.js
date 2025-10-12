@@ -5,8 +5,11 @@ import products from "@/data/products";
 Vue.use(Vuex);
 
 export default new Vuex.Store({
+  /**
+   * cardProducts: [{ productId: Number, amount: Number }]
+   */
   state: {
-    cardProducts: [{ productId: 1, amount: 2 }],
+    cardProducts: [],
   },
   mutations: {
     addProductToCart(state, payload) {
