@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import products from '../data/products';
+import { API_BASE_URL } from '@/config';
 import ProductList from '../components/ProductList.vue';
 import BasePagination from '../components/BasePagination.vue';
 import ProductFilter from '../components/ProductFilter.vue';
@@ -44,7 +44,7 @@ export default {
     return {
       filterPriceFrom: 0,
       filterPriceTo: 0,
-      filterCategoryId: 0,
+      filterCategoryId: '',
       filterColorProduct: '',
       page: 1,
       productsPerPage: 3,
@@ -53,96 +53,89 @@ export default {
     };
   },
   computed: {
-    filteredProducts() {
-      let filteredProducts = products;
 
-      if (this.filterPriceFrom > 0) {
-        // eslint-disable-next-line max-len
-        filteredProducts = filteredProducts.filter((product) => product.price > this.filterPriceFrom);
-      }
-
-      if (this.filterPriceTo > 0) {
-        // eslint-disable-next-line max-len
-        filteredProducts = filteredProducts.filter((product) => product.price < this.filterPriceTo);
-      }
-
-      if (this.filterCategoryId) {
-        // eslint-disable-next-line max-len
-        filteredProducts = filteredProducts.filter((product) => product.categoryId === this.filterCategoryId);
-      }
-
-      if (this.filterColorProduct) {
-        // eslint-disable-next-line max-len
-        filteredProducts = filteredProducts.filter((product) => product.color === this.filterColorProduct);
-      }
-
-      return filteredProducts;
-    },
-
-    // данные по курсу, которые меняем на fakestoreapi.com
-    // products() {
-    //   return this.productsData
-    //     ? this.productsData.items.map(product => {
-    //       return {
-    //         ...product,
-    //         image: product.image.file.url
-    //       }
-    //     })
-    //     : [];
-    // },
     products() {
-      return this.productsData
-        ? this.productsData.items.map(product => {
+      return this.filteredProducts.slice(this.start, this.end)
+        .map(product => {
           return {
             ...product,
             image: product.image // теперь строка, а не объект
           }
         })
-        : [];
+    },
+
+    filteredProducts() {
+      if (!this.productsData) return [];
+
+      let filtered = this.productsData;
+
+      // фильтр по минимальной цене
+      if (this.filterPriceFrom > 0) {
+        filtered = filtered.filter(product => product.price >= this.filterPriceFrom);
+      }
+
+      // фильтр по максимальной цене
+      if (this.filterPriceTo > 0) {
+        filtered = filtered.filter(product => product.price <= this.filterPriceTo);
+      }
+
+      // здесь позже можно добавить фильтр по категории, цвету и т.п.
+
+      if (this.filterCategoryId) {
+        filtered = filtered.filter(
+          product => product.category === this.filterCategoryId
+        );
+      }
+      return filtered;
+    },
+
+    start() {
+      return (this.page - 1) * this.productsPerPage;
+    },
+
+    end() {
+      return this.start + this.productsPerPage;
     },
 
     countProducts() {
-      return this.productsData ? this.productsData.pagination.total : 0;
-    },
+      // показываем количество именно отфильтрованных товаров
+      return this.filteredProducts.length;
+    }
   },
 
   // данные по курсу, которые меняем на fakestoreapi.com
   // methods: {
-  //   loadProducts() {
-  //     axios.get(`http://vue-study.dev.creonit.ru/api/products?page=${this.page}&limit=${this.productsPerPage}`)
-  //       .then(response => this.productsData = response.data);
-  //   }
+  // loadProducts(){
+  //   axios
+  //     .get(`http://vue-study.dev.creonit.ru/api/products`, {
+  //       params: {
+  //         page: this.page,
+  //         limit: this.productsPerPage,
+  //         categoryId: this.filterCategoryId,
+  //         minPrice: this.filterPriceFrom,
+  //         maxPrice: this.filterPriceTo
+  //       }
+  //     })
+  //     .then(response => this.productsData = response.data);
   // },
 
   methods: {
     loadProducts() {
-      axios.get('https://fakestoreapi.com/products')
+      axios.get(API_BASE_URL + '/products')
         .then(response => {
-          const allProducts = response.data.map(product => {
+          this.productsData = response.data.map(product => {
             return {
               ...product,
-              price: Math.round(product.price * 95), // переводим в рубли и округляем
+              price: Math.round(product.price * 95),
             };
           });
-
-          // ручная пагинация:
-          const start = (this.page - 1) * this.productsPerPage;
-          const end = start + this.productsPerPage;
-
-          // сохраняем результат в структуре, похожей на старую
-          this.productsData = {
-            items: allProducts.slice(start, end),
-            pagination: {
-              total: allProducts.length
-            }
-          };
         });
     }
   },
   watch: {
     page() {
       this.loadProducts();
-    }
+    },
   },
   created() {
     this.loadProducts();

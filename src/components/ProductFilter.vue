@@ -22,8 +22,9 @@
         <legend class="form__legend">Категория</legend>
         <label class="form__label form__label--select">
           <select class="form__select" type="text" name="category" v-model.number="currentCategoryId">
-            <option value="0">Все категории</option>
-            <option :value="category.id" v-for="category in categories" :key="category.id">{{ category.title }}</option>
+            <option value="">Все категории</option>
+            <option :value="category.originalTitle" v-for="category in categories" :key="category.id">{{ category.title
+            }}</option>
           </select>
         </label>
       </fieldset>
@@ -154,7 +155,8 @@
 </template>
 
 <script>
-import categories from '../data/categories';
+import { API_BASE_URL } from '@/config';
+import axios from 'axios';
 
 export default {
   name: 'ProductFilter',
@@ -163,13 +165,15 @@ export default {
     return {
       currentPriceFrom: 0,
       currentPriceTo: 0,
-      currentCategoryId: 0,
+      currentCategoryId: '',
       currentColorProduct: '',
+
+      categoriesData: null,
     };
   },
   computed: {
     categories() {
-      return categories;
+      return this.categoriesData || [];
     },
   },
   watch: {
@@ -187,6 +191,15 @@ export default {
     },
   },
   methods: {
+    translateCategory(englishTitle) {
+      const translations = {
+        'electronics': 'Электроника',
+        'jewelery': 'Ювелирные изделия',
+        'men\'s clothing': 'Мужская одежда',
+        'women\'s clothing': 'Женская одежда'
+      };
+      return translations[englishTitle] || englishTitle;
+    },
     submit() {
       this.$emit('update:priceFrom', this.currentPriceFrom);
       this.$emit('update:priceTo', this.currentPriceTo);
@@ -196,10 +209,24 @@ export default {
     reset() {
       this.$emit('update:priceFrom', 0);
       this.$emit('update:priceTo', 0);
-      this.$emit('update:categoryId', 0);
+      this.$emit('update:categoryId', '');
       this.$emit('update:colorProduct', '');
     },
+    loadCategories() {
+      axios.get(API_BASE_URL + '/products/categories')
+        .then(response => {
+          // FakeStoreAPI возвращает просто массив строк, а не объекты
+          this.categoriesData = response.data.map((title, index) => ({
+            id: index + 1,
+            title: this.translateCategory(title),
+            originalTitle: title,
+          }));
+        });
+    },
   },
+  created() {
+    this.loadCategories();
+  }
 };
 
 </script>
