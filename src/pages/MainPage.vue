@@ -18,8 +18,14 @@
       <ProductFilter :price-from.sync="filterPriceFrom" :price-to.sync="filterPriceTo"
         :category-id.sync="filterCategoryId" :color-product.sync="filterColorProduct" />
       <section class="catalog">
-        <ProductList :products="products">
-        </ProductList>
+        <ProductList :products="products" />
+
+        <div v-if="productsLoading">Загрузка товаров...</div>
+
+        <div v-if="productsLoadingFailed">Произошла ошибка при загрузке товаров <button
+            @click.prevent="loadProducts">Попробовать ещё раз</button>
+        </div>
+
         <BasePagination v-model="page" :count="countProducts" :per-page="productsPerPage"></BasePagination>
       </section>
 
@@ -50,6 +56,10 @@ export default {
       productsPerPage: 3,
 
       productsData: null,
+
+      productsLoading: false,
+
+      productsLoadingFailed: false,
     };
   },
   computed: {
@@ -59,7 +69,7 @@ export default {
         .map(product => {
           return {
             ...product,
-            image: product.image // теперь строка, а не объект
+            image: product.image
           }
         })
     },
@@ -69,12 +79,10 @@ export default {
 
       let filtered = this.productsData;
 
-      // фильтр по минимальной цене
       if (this.filterPriceFrom > 0) {
         filtered = filtered.filter(product => product.price >= this.filterPriceFrom);
       }
 
-      // фильтр по максимальной цене
       if (this.filterPriceTo > 0) {
         filtered = filtered.filter(product => product.price <= this.filterPriceTo);
       }
@@ -98,38 +106,28 @@ export default {
     },
 
     countProducts() {
-      // показываем количество именно отфильтрованных товаров
       return this.filteredProducts.length;
     }
   },
 
-  // данные по курсу, которые меняем на fakestoreapi.com
-  // methods: {
-  // loadProducts(){
-  //   axios
-  //     .get(`http://vue-study.dev.creonit.ru/api/products`, {
-  //       params: {
-  //         page: this.page,
-  //         limit: this.productsPerPage,
-  //         categoryId: this.filterCategoryId,
-  //         minPrice: this.filterPriceFrom,
-  //         maxPrice: this.filterPriceTo
-  //       }
-  //     })
-  //     .then(response => this.productsData = response.data);
-  // },
-
   methods: {
     loadProducts() {
-      axios.get(API_BASE_URL + '/products')
-        .then(response => {
-          this.productsData = response.data.map(product => {
-            return {
-              ...product,
-              price: Math.round(product.price * 95),
-            };
-          });
-        });
+      this.productsLoading = true;
+      this.productsLoadingFailed = false;
+      clearTimeout(this.loadProductsTimer);
+      this.loadProductsTimer = setTimeout(() => {
+        axios.get(API_BASE_URL + '/products2')
+          .then(response => {
+            this.productsData = response.data.map(product => {
+              return {
+                ...product,
+                price: Math.round(product.price * 95),
+              };
+            });
+          })
+          .catch(() => this.productsLoadingFailed = true)
+          .then(() => this.productsLoading = false);
+      }, 3000);
     }
   },
   watch: {

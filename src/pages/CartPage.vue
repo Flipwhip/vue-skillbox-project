@@ -62,12 +62,6 @@ export default {
   components: { CartItem },
   computed: {
     ...mapGetters({ products: 'cartDetailProducts', totalPrice: 'cartTotalPrice' })
-
-    // сокращаем эту запись
-    // ...mapGetters(['cartDetailProducts']),
-    // products() {
-    //   return this.cartDetailProducts
-    // }
   }
 }
 
