@@ -20,7 +20,7 @@
       <section class="catalog">
         <ProductList :products="products" />
 
-        <div v-if="productsLoading">Загрузка товаров...</div>
+        <PreloaderAnimation v-if="productsLoading" />
 
         <div v-if="productsLoadingFailed">Произошла ошибка при загрузке товаров <button
             @click.prevent="loadProducts">Попробовать ещё раз</button>
@@ -36,6 +36,7 @@
 
 <script>
 import { API_BASE_URL } from '@/config';
+import PreloaderAnimation from '@/components/PreloaderAnimation.vue';
 import ProductList from '../components/ProductList.vue';
 import BasePagination from '../components/BasePagination.vue';
 import ProductFilter from '../components/ProductFilter.vue';
@@ -45,7 +46,7 @@ import axios from 'axios';
 export default {
   name: 'MainPage',
   filters: { productWord },
-  components: { ProductList, BasePagination, ProductFilter },
+  components: { PreloaderAnimation, ProductList, BasePagination, ProductFilter },
   data() {
     return {
       filterPriceFrom: 0,
@@ -116,7 +117,7 @@ export default {
       this.productsLoadingFailed = false;
       clearTimeout(this.loadProductsTimer);
       this.loadProductsTimer = setTimeout(() => {
-        axios.get(API_BASE_URL + '/products2')
+        axios.get(API_BASE_URL + '/products')
           .then(response => {
             this.productsData = response.data.map(product => {
               return {
@@ -127,7 +128,7 @@ export default {
           })
           .catch(() => this.productsLoadingFailed = true)
           .then(() => this.productsLoading = false);
-      }, 3000);
+      }, 1000);
     }
   },
   watch: {

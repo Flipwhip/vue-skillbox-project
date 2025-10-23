@@ -2,8 +2,9 @@
 <!-- eslint-disable no-irregular-whitespace -->
 <!-- eslint-disable max-len -->
 <template>
-
-  <main class="content container">
+  <main class="content container" v-if="productLoading">Загрузка товара... </main>
+  <main class="content container" v-else-if="!productData">Не удалось загрузить товар</main>
+  <main class="content container" v-else>
     <div class="content__top">
       <ul class="breadcrumbs">
         <li class="breadcrumbs__item">
@@ -13,12 +14,8 @@
           </router-link>
         </li>
         <li class="breadcrumbs__item">
-          <!-- // второй способ - через событие и через экземпляр роутера
-          <a class="breadcrumbs__link" @click.prevent="$router.push({ name: 'main' })">
-            {{ category.title }}
-          </a> -->
           <router-link class="breadcrumbs__link" :to="{ name: 'main' }">
-            {{ category.title }}
+            {{ translateCategory(category) }}
           </router-link>
 
         </li>
@@ -182,17 +179,20 @@
 </template>
 
 <script>
-import products from '@/data/products';
-import categories from '@/data/categories';
+import { API_BASE_URL } from '@/config';
 import numberFormat from '@/helpers/numberFormat';
-import ProductCount from '@/components/ProductCount.vue'
+import ProductCount from '@/components/ProductCount.vue';
+import axios from 'axios';
 
 export default {
   name: 'ProductPage',
   components: { ProductCount },
   data() {
     return {
-      productAmount: 1
+      productAmount: 1,
+      productData: null,
+      productLoading: false,
+      productLoadingFailed: false,
     }
   },
   filters: {
@@ -200,20 +200,50 @@ export default {
   },
   computed: {
     product() {
-      return products.find((product) => product.id === Number(this.$route.params.id));
+      return this.productData;
     },
     category() {
-      return categories.find((category) => category.id === this.product.categoryId);
+      return this.productData.category;
     },
   },
   methods: {
+    translateCategory(englishTitle) {
+      const translations = {
+        'electronics': 'Электроника',
+        'jewelery': 'Ювелирные изделия',
+        'men\'s clothing': 'Мужская одежда',
+        'women\'s clothing': 'Женская одежда'
+      };
+      return translations[englishTitle] || englishTitle;
+    },
     addToCart() {
       this.$store.commit(
         'addProductToCart',
         { productId: this.product.id, amount: this.productAmount }
       )
+    },
+    loadProduct() {
+      this.productLoading = true;
+      this.productLoadingFailed = false;
+      axios.get(API_BASE_URL + '/products/' + Number(this.$route.params.id))
+        .then(response => {
+          const product = response.data;
+          return this.productData = {
+            ...product,
+            price: Math.round(product.price * 95),
+          }
+        })
+        .catch(() => this.productLoadingFailed = true)
+        .then(() => this.productLoading = false)
     }
   },
-
+  watch: {
+    '$route.params.id': {
+      handler() {
+        this.loadProduct()
+      },
+      immediate: true
+    }
+  },
 };
 </script>
